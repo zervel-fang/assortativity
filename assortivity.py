@@ -5,7 +5,7 @@ import numpy as np
 G = nx.barabasi_albert_graph(200,2)
 Iteration = 10000 ##迭代次数
 i = 0
-p = 1   ##重连概率
+p = 0.5   ##重连概率
 ###########开始以概率p按算法要求重连#########
 while i < Iteration:
     edge = list(G.edges())
@@ -30,4 +30,13 @@ while i < Iteration:
         G.remove_edge(edge2[0], edge2[1])
         G.add_edge(order_arr[0][0], order_arr[0][1])
         G.add_edge(order_arr[0][2], order_arr[0][3])
+    if p1 > p and index1 != index2:
+        #################随机重连####################
+        rand_index = random.sample(range(0, 4), 4)
+        G.remove_edge(edge1[0], edge1[1])
+        G.remove_edge(edge2[0], edge2[1])
+        G.add_edge(order_arr[0][rand_index[0]], order_arr[0][rand_index[1]])
+        G.add_edge(order_arr[0][rand_index[2]], order_arr[0][rand_index[3]])
     print("同配系数为：",str(round(nx.degree_assortativity_coefficient(G),6)))
+
+#print(list(range(0, 4)))
