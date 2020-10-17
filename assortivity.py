@@ -8,6 +8,22 @@ def calculate_ass(G, p , Iteration):
     i = 0
     #p = 0.6   ##重连概率
     ###########开始以概率p按算法要求重连#########
+    degree_nn = []
+    for node in G.nodes():
+        sum1 = 0
+        neighbors = nx.neighbors(G, node)
+        for j in neighbors:
+            sum1 = sum1 + G.degree(j)
+        sum1 = sum1/ G.degree(j)
+        degree_nn.append(sum1)
+    ############计算r3############################
+    degree = np.array(G.degree())
+    degree = degree.T[1]
+    degree = degree.T
+
+
+    value2 = np.corrcoef(degree,degree_nn)[0][1]
+    #print(value2)
     while i < Iteration:
         #print(i)
         edge = list(G.edges())
@@ -26,6 +42,7 @@ def calculate_ass(G, p , Iteration):
         order_arr = order_arr[:, order_arr[1].argsort()]
         i = i + 1
         p1 = random.random()
+        #print(p1)
         ############在网络中移除原来的边并加上新的边##########
         if p1 < p and index1 != index2:
             G.remove_edge(edge1[0], edge1[1])
@@ -40,10 +57,15 @@ def calculate_ass(G, p , Iteration):
             G.add_edge(order_arr[0][rand_index[0]], order_arr[0][rand_index[1]])
             G.add_edge(order_arr[0][rand_index[2]], order_arr[0][rand_index[3]])
     #return round(nx.degree_assortativity_coefficient(G),6)
+    value1 = round(nx.degree_assortativity_coefficient(G),6)
     M = nx.degree_mixing_matrix(G)
     M2 = M*M
     value = (M.trace() - M2.trace())/(1-M2.trace())
-    return value
+
+
+    #############计算r3###########################
+
+    return value1, value,value2
 
 def calculate_disass(G, p , Iteration):
     #Iteration = 10000 ##迭代次数
@@ -88,42 +110,36 @@ def calculate_disass(G, p , Iteration):
 
 ############首先生成BA网络##########
 
-Iteration = 100000  ##迭代次数
-P = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9, 1]
-sum_v = 0
-for i in range(2):
+Iteration = 10000  ##迭代次数
+P = [0.999999,0.99999,0.9999,0.999,0.99,0.9,0.8,0.7,0.6,0.5,0]
+P1 = [0.000001,0.00001,0.0001,0.001,0.01,0.1,0.2,0.3,0.4,0.5,1]
+assortivity = np.zeros((11,3))
+count = 0
+for i in P:
     print(i)
-    G = nx.barabasi_albert_graph(2000, 2)
-    v = calculate_ass(G, 1, Iteration)
-    print(v)
-    sum_v = sum_v + v
+    G = nx.barabasi_albert_graph(200, 2)
+    for j in range(20):
+        value1,value2,value3 = calculate_ass(G, i, Iteration)
+        assortivity[count][0]= assortivity[count][0] + value1
+        assortivity[count][1] = assortivity[count][1] + value2
+        assortivity[count][2] = assortivity[count][2] + value3
+    assortivity[count][0] = assortivity[count][0] / 20
+    assortivity[count][1] = assortivity[count][1] / 20
+    assortivity[count][2] = assortivity[count][2] / 20
+    count = count + 1
 
-
-print(sum_v/2)
-# assortivity = np.zeros((11,2))
-# count = 0
-# for i in P:
-#     print(i)
-#     for j in range(20):
-#         value = calculate_ass(G, i, Iteration)
-#         assortivity[count][0] = assortivity[count][0] + value
-#         value1 = calculate_disass(G, i, Iteration)
-#         assortivity[count][1] = assortivity[count][1] + value1
-#     assortivity[count][0] = assortivity[count][0] / 20
-#     assortivity[count][1] = assortivity[count][1] / 20
-#     count = count + 1
 #
 #
-# plt.subplot(121)
-# assortivity = assortivity.T
-# plt.plot(P,assortivity[0])
-# plt.xlabel('p')
-# plt.ylabel('assortivity')
-# plt.subplot(122)
-# plt.plot(P,assortivity[1])
-# plt.xlabel('p')
-# plt.ylabel('assortivity')
-# fid = open('dataset.txt','w')
-# for i in range(11):
-#     fid.write(str(assortivity[0][i])+' '+str(assortivity[1][i])+'\n')
-# plt.show()
+
+assortivity = assortivity.T
+plt.semilogx(P1,assortivity[0],'o-',label='$r_1$')
+plt.semilogx(P1,assortivity[1],'^-',label='$r_2$')
+plt.semilogx(P1,assortivity[2],'v-',label='$r_3$')
+plt.xlabel('1-$p$')
+plt.ylabel('assortivity')
+plt.legend()
+fid = open('dataset.txt','w')
+for i in range(11):
+    fid.write(str(P1[i])+' '+str(assortivity[i][0])+' '+str(assortivity[i][1])+' '+str(assortivity[i][2])+'\n')
+plt.savefig('ass.png',dpi=500)
+plt.show()
