@@ -109,7 +109,10 @@ def calculate_disass(G, p , Iteration):
     return value
 
 ############首先生成BA网络##########
-
+# G = nx.read_edgelist('datasets.txt')
+# print(G.nodes())
+# M = nx.degree_mixing_matrix(G)
+# print(M)
 Iteration = 10000  ##迭代次数
 P = [0.999999,0.99999,0.9999,0.999,0.99,0.9,0.8,0.7,0.6,0.5,0]
 P1 = [0.000001,0.00001,0.0001,0.001,0.01,0.1,0.2,0.3,0.4,0.5,1]
@@ -118,14 +121,14 @@ count = 0
 for i in P:
     print(i)
     G = nx.barabasi_albert_graph(200, 2)
-    for j in range(20):
+    for j in range(10):
         value1,value2,value3 = calculate_ass(G, i, Iteration)
         assortivity[count][0]= assortivity[count][0] + value1
         assortivity[count][1] = assortivity[count][1] + value2
         assortivity[count][2] = assortivity[count][2] + value3
-    assortivity[count][0] = assortivity[count][0] / 20
-    assortivity[count][1] = assortivity[count][1] / 20
-    assortivity[count][2] = assortivity[count][2] / 20
+    assortivity[count][0] = assortivity[count][0] / 10
+    assortivity[count][1] = assortivity[count][1] / 10
+    assortivity[count][2] = assortivity[count][2] / 10
     count = count + 1
 
 #
@@ -134,12 +137,12 @@ for i in P:
 assortivity = assortivity.T
 plt.semilogx(P1,assortivity[0],'o-',label='$r_1$')
 plt.semilogx(P1,assortivity[1],'^-',label='$r_2$')
-plt.semilogx(P1,assortivity[2],'v-',label='$r_3$')
+#plt.semilogx(P1,assortivity[2],'v-',label='$r_3$')
 plt.xlabel('1-$p$')
 plt.ylabel('assortivity')
 plt.legend()
 fid = open('dataset.txt','w')
 for i in range(11):
-    fid.write(str(P1[i])+' '+str(assortivity[i][0])+' '+str(assortivity[i][1])+' '+str(assortivity[i][2])+'\n')
+    fid.write(str(P1[i])+' '+str(assortivity[0][i])+' '+str(assortivity[1][i])+' '+str(assortivity[2][i])+'\n')
 plt.savefig('ass.png',dpi=500)
 plt.show()
