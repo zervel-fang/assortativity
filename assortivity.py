@@ -65,7 +65,7 @@ def calculate_ass(G, p , Iteration):
 def calculate_disass(G, p , Iteration):
     i = 0
     while i < Iteration:
-        print(i)
+        #print(i)
         edge = list(G.edges())
         degree = nx.degree(G)
         index1 = random.randint(0,len(G.edges)-1) ##随机获取第一条边
@@ -109,9 +109,10 @@ def calculate_disass(G, p , Iteration):
     return r1, r2
 
 Iteration = 1500  ##迭代次数
-P = [0.999999,0.99999,0.9999,0.999,0.99,0.9,0.8,0.7,0.6,0.4,0]
-P1 = [0.000001,0.00001,0.0001,0.001,0.01,0.1,0.2,0.3,0.4,0.6,1]
-assortivity = np.zeros((11,2))
+#P = [0.999999,0.99999,0.9999,0.999,0.99,0.9,0.8,0.7,0.6,0.4,0]
+P = [1, 0.95,  0.9, 0.85,  0.8, 0.75,  0.7, 0.65,  0.6, 0.55,  0.5, 0.45,  0.4, 0.35,  0.3, 0.25,  0.2, 0.15,  0.1, 0.05, 0]
+P1 = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
+assortivity = np.zeros((21,2))
 
 count = 0
 for i in P:
@@ -125,7 +126,7 @@ for i in P:
     assortivity[count][0] = assortivity[count][0] / 10
     assortivity[count][1] = assortivity[count][1] / 10
     count = count + 1
-assortivity1 = np.zeros((11,2))
+assortivity1 = np.zeros((21,2))
 count = 0
 for i in P:
     print(i)
@@ -137,6 +138,18 @@ for i in P:
     assortivity1[count][0] = assortivity1[count][0] / 10
     assortivity1[count][1] = assortivity1[count][1] / 10
     count = count + 1
+
+fid = open('ass.txt','w')
+
+for i in assortivity:
+    fid.write(str(i[0])+' '+str(i[1])+'\n')
+fid.close()
+
+fid1 = open('disass.txt','w')
+
+for i in assortivity1:
+    fid1.write(str(i[0])+' '+str(i[1])+'\n')
+fid1.close()
 
 plt.figure(figsize=(16,16))
 plt.style.use('ggplot')
