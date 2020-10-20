@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 ##########1.避免重复选择一条边
 ##########2.避免选择的边中有重合的节点
 def Judge_in_graph(G, node1, node2, node3, node4):
+    ############该函数用来判断重连的边是否在原网络中########
     edges = list(G.edges())
     tag = False
     if (node1, node2) not in edges and (node3, node4) not in edges:
@@ -28,6 +29,7 @@ def calculate_ass(G, p , Iteration):
         k3 = degree[edge2[0]]
         k4 = degree[edge2[1]]
         tag = 0
+        ####################选择的两条边的四个节点中不能有相同的节点##################
         if edge1[0] != edge2[0] and edge1[0] != edge2[1] and edge1[1] != edge2[0] and edge1[1] != edge2[1]:
             tag = 1
         order_arr = [[edge1[0], edge1[1], edge2[0], edge2[1]],[k1, k2, k3, k4]]
@@ -43,8 +45,7 @@ def calculate_ass(G, p , Iteration):
                 G.remove_edge(edge1[0], edge1[1])
                 G.remove_edge(edge2[0], edge2[1])
                 i = i + 1
-                #print(i)
-        if p1 >= p and index1 != index2 and tag == 1:
+        if p1 >= p and tag == 1:
             #################随机重连####################
             rand_index = random.sample(range(0, 4), 4)
             judge_tag = Judge_in_graph(G, order_arr[0][rand_index[0]], order_arr[0][rand_index[1]], order_arr[0][rand_index[2]], order_arr[0][rand_index[3]])
@@ -54,6 +55,7 @@ def calculate_ass(G, p , Iteration):
                 G.add_edge(order_arr[0][rand_index[0]], order_arr[0][rand_index[1]])
                 G.add_edge(order_arr[0][rand_index[2]], order_arr[0][rand_index[3]])
                 i = i + 1
+    ##############计算两种同配性系数###############
     r1 = round(nx.degree_assortativity_coefficient(G),6)
     M = nx.degree_mixing_matrix(G)
     M2 = M*M
