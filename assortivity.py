@@ -45,6 +45,8 @@ def calculate_ass(G, p , Iteration):
                 G.remove_edge(edge1[0], edge1[1])
                 G.remove_edge(edge2[0], edge2[1])
                 i = i + 1
+                r1 = round(nx.degree_assortativity_coefficient(G), 6)
+                print(r1)
         if p1 >= p and tag == 1:
             #################随机重连####################
             rand_index = random.sample(range(0, 4), 4)
@@ -102,71 +104,58 @@ def calculate_disass(G, p , Iteration):
                 G.add_edge(order_arr[0][rand_index[0]], order_arr[0][rand_index[1]])
                 G.add_edge(order_arr[0][rand_index[2]], order_arr[0][rand_index[3]])
                 i = i + 1
-    r1 = round(nx.degree_assortativity_coefficient(G),6)
+
     M = nx.degree_mixing_matrix(G)
     M2 = M*M
     r2 = (M.trace() - M2.trace())/(1-M2.trace())
     return r1, r2
 
-Iteration = 1500  ##迭代次数
+Iteration = 1000  ##迭代次数
 #P = [0.999999,0.99999,0.9999,0.999,0.99,0.9,0.8,0.7,0.6,0.4,0]
 P = [1, 0.95,  0.9, 0.85,  0.8, 0.75,  0.7, 0.65,  0.6, 0.55,  0.5, 0.45,  0.4, 0.35,  0.3, 0.25,  0.2, 0.15,  0.1, 0.05, 0]
 P1 = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
 assortivity = np.zeros((21,2))
 
+G = nx.read_edgelist('datasets/network.txt')
+value1, value2 = calculate_ass(G, 1, Iteration)
+print(value1, value2)
+
+
+print(G.edges())
 count = 0
 for i in P:
     print(i)
-    for j in range(10):
-        G = nx.barabasi_albert_graph(200, 2)
+    for j in range(20):
+        G = nx.read_edgelist('datasets/network.txt', nodetype=int)
         value1,value2 = calculate_ass(G, i, Iteration)
         print(value1,value2)
         assortivity[count][0]= assortivity[count][0] + value1
         assortivity[count][1] = assortivity[count][1] + value2
-    assortivity[count][0] = assortivity[count][0] / 10
-    assortivity[count][1] = assortivity[count][1] / 10
+    assortivity[count][0] = assortivity[count][0] / 20
+    assortivity[count][1] = assortivity[count][1] / 20
     count = count + 1
 assortivity1 = np.zeros((21,2))
 count = 0
 for i in P:
     print(i)
     G = nx.barabasi_albert_graph(200, 2)
-    for j in range(10):
+    for j in range(20):
         value1,value2 = calculate_disass(G, i, Iteration)
         assortivity1[count][0]= assortivity1[count][0] + value1
         assortivity1[count][1] = assortivity1[count][1] + value2
-    assortivity1[count][0] = assortivity1[count][0] / 10
-    assortivity1[count][1] = assortivity1[count][1] / 10
+    assortivity1[count][0] = assortivity1[count][0] / 20
+    assortivity1[count][1] = assortivity1[count][1] / 20
     count = count + 1
 
-fid = open('ass.txt','w')
+fid = open('results/ass.txt','w')
 
 for i in assortivity:
     fid.write(str(i[0])+' '+str(i[1])+'\n')
 fid.close()
 
-fid1 = open('disass.txt','w')
+fid1 = open('results/disass.txt','w')
 
 for i in assortivity1:
     fid1.write(str(i[0])+' '+str(i[1])+'\n')
 fid1.close()
 
-plt.figure(figsize=(16,16))
-plt.style.use('ggplot')
-plt.subplot(121)
-assortivity = assortivity.T
-plt.semilogx(P1,assortivity[0],'o-',label='$r_1$')
-plt.semilogx(P1,assortivity[1],'^-',label='$r_2$')
-plt.xlabel('1-$p$')
-plt.ylabel('assortivity')
-plt.subplot(122)
-assortivity1 = assortivity1.T
-plt.semilogx(P1,assortivity1[0],'o-',label='$r_1$')
-plt.semilogx(P1,assortivity1[1],'^-',label='$r_2$')
-plt.xlabel('1-$p$')
-plt.ylabel('assortivity')
-plt.legend()
-
-plt.subplots_adjust(top=0.7,bottom=0.3)
-plt.savefig('ass_disass.png',dpi=500,bbox_inches='tight')
-plt.show()
