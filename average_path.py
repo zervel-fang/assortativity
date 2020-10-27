@@ -40,6 +40,7 @@ def calculate_ass(G, p , Iteration):
                 G.remove_edge(edge1[0], edge1[1])
                 G.remove_edge(edge2[0], edge2[1])
                 i = i + 1
+                #(i)
                 #print(i)
         if p1 >= p and index1 != index2 and tag == 1:
             #################随机重连####################
@@ -55,13 +56,23 @@ def calculate_ass(G, p , Iteration):
     M = nx.degree_mixing_matrix(G)
     M2 = M*M
     r1 = (M.trace() - np.sum(M2)) / (1 - np.sum(M2))
-    r2 = round(nx.average_clustering(G), 6)
+    conncected = nx.is_connected(G)
+    if conncected:
+        r2 = round(nx.average_shortest_path_length(G), 6)
+    else:
+        sv = 0
+        coun = 0
+        for C in (G.subgraph(c).copy() for c in nx.connected_components(G)):
+            v = nx.average_shortest_path_length(C)
+            sv = sv + v
+            coun = coun + 1
+        r2 = sv / coun
     return r1, r2
 
 def calculate_disass(G, p , Iteration):
     i = 0
     while i < Iteration:
-        #print(i)
+        print(i)
         edge = list(G.edges())
         degree = nx.degree(G)
         index1 = random.randint(0,len(G.edges)-1) ##随机获取第一条边
@@ -87,6 +98,7 @@ def calculate_disass(G, p , Iteration):
                 G.add_edge(order_arr[0][1], order_arr[0][2])
                 G.remove_edge(edge1[0], edge1[1])
                 G.remove_edge(edge2[0], edge2[1])
+
                 i = i + 1
         if p1 >= p and index1 != index2 and tag == 1:
             #################随机重连####################
@@ -101,40 +113,46 @@ def calculate_disass(G, p , Iteration):
     #r1 = round(nx.degree_assortativity_coefficient(G),6)
     M = nx.degree_mixing_matrix(G)
     M2 = M*M
-    r1 = (M.trace() - np.sum(M2))/(1-np.sum(M2))
-    r2 = round(nx.average_clustering(G),6)
+    r1 = (M.trace() - np.sum(M2)) / (1 - np.sum(M2))
+    conncected = nx.is_connected(G)
+    if conncected:
+        r2 = round(nx.average_shortest_path_length(G), 6)
+    else:
+        sv = 0
+        coun = 0
+        for C in (G.subgraph(c).copy() for c in nx.connected_components(G)):
+            v = nx.average_shortest_path_length(C)
+            sv = sv + v
+            coun = coun + 1
+        r2 = sv / coun
     return r1, r2
 
-Iteration = 1200  ##迭代次数
-P = [1, 0.9999,  0.999, 0.99,  0.98, 0.97,  0.96, 0.95, 0.94,  0.93,  0.92, 0.75,  0.7, 0.65,  0.6, 0.5,  0.4, 0.3,  0.2, 0.1, 0]
+Iteration = 10000 ##迭代次数
+P = [1, 0.95,  0.9, 0.85,  0.8, 0.75,  0.7, 0.65,  0.6, 0.55,  0.5, 0.45,  0.4, 0.35,  0.3, 0.25,  0.2, 0.15,  0.1, 0.05, 0]
 assortivity = np.zeros((21,1))
-clustering = np.zeros((21,1))
-
+average_path = np.zeros((21,1))
 count = 0
-#G = nx.barabasi_albert_graph(200, 2)
+
 for i in P:
     print(i)
-    for j in range(20):
-        print(j)
-        G = nx.read_edgelist('datasets/network.txt', nodetype=int)
+    for j in range(10):
+        G = nx.read_edgelist('datasets/network_average_path.txt', nodetype=int)
         r1, r2 = calculate_ass(G, i, Iteration)
         print(r1, r2)
         assortivity[count] = assortivity[count] + r1
-        clustering[count] = clustering[count] + r2
-    assortivity[count] = assortivity[count] / 20
-    clustering[count] = clustering[count] / 20
+        average_path[count] = average_path[count] + r2
+    assortivity[count] = assortivity[count] / 10
+    average_path[count] = average_path[count] / 10
     count = count + 1
-
-fid = open('results/clustering_ass.txt','w')
+fid = open('results/average_path_ass.txt', 'w')
 for i in range(len(P)):
-    fid.write(str(assortivity[i][0]) + ' ' + str(clustering[i][0]) + '\n')
+    fid.write(str(assortivity[i])+' '+str(average_path[i])+'\n')
 fid.close()
 
-
-#plt.figure(figsize=(16, 16))
+plt.figure(figsize=(16,16))
 plt.style.use('ggplot')
-plt.plot(assortivity, clustering, 'o-', label='$r_1$')
+plt.semilogx(assortivity,average_path,'o-', label='$r_1$')
 plt.xlabel('assortivity')
-plt.ylabel('clustering coefficient')
-plt.savefig('results/clustering_ass.png', dpi=500, bbox_inches='tight')
+plt.ylabel('average path length')
+plt.savefig('results/average_length_path.png', dpi=500, bbox_inches='tight')
 plt.show()
